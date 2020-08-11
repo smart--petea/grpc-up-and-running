@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+
+package ecommerce;
+
+service OrderManagement {
+    rpc processOrders(stream google.protobuf.StringValue) returns (stream CombinedShipment); //1. Both method parameters and return parameters are declared as streams in bidirectional RPC
+}
+
+message Order { //2. Structure of the Order message
+    string id = 1;
+    repeated string items = 2;
+    string description = 3;
+    float price = 4;
+    string destination = 5;
+}
+
+message CombinedShipment { //3. Structure of the CombinedShipment message
+    string id = 1;
+    string status = 2;
+    repeated Order ordersList = 3;
+}
