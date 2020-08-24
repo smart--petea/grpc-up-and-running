@@ -7,4 +7,11 @@ package proto;
 
 service ServiceA {
     rpc homePage(google.protobuf.Empty) returns (google.protobuf.StringValue);
+    rpc returnAllArticles(google.protobuf.Empty) returns (stream Article);
+}
+
+message Article {
+    string title = 1;
+    string desc = 2;
+    string content = 3;
 }
