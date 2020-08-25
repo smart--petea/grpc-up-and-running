@@ -4,11 +4,14 @@ import (
     "net"
     "log"
     "google.golang.org/grpc"
+    "google.golang.org/grpc/status"
+    "google.golang.org/grpc/codes"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	wrappers "github.com/golang/protobuf/ptypes/wrappers"
     "context"
 
     s "grpc/proto"
+
 )
 
 const (
@@ -17,6 +20,17 @@ const (
 
 type Server struct {
     Articles []s.Article
+}
+
+func (server *Server) ReturnSingleArticle(ctx context.Context, id *wrappers.StringValue) (*s.Article, error) {
+    log.Printf("ReturnSingleArticle function arg=%v", id)
+    for _, article := range server.Articles {
+        if article.Id == id.Value {
+            return &article, nil
+        }
+    }
+
+    return nil, status.Error(codes.NotFound, "the article is not found")
 }
 
 func (server *Server) ReturnAllArticles(emt *empty.Empty, stream s.ServiceA_ReturnAllArticlesServer) error {
@@ -39,11 +53,13 @@ func (server *Server) HomePage(ctx context.Context, empt *empty.Empty) (*wrapper
 func NewServer() *Server {
     articles := []s.Article {
         s.Article{
+            Id: "0",
             Title: "Hello",
             Desc: "Article Description",
             Content: "Article Content",
         },
         s.Article{
+            Id: "1",
             Title: "Hello 1",
             Desc: "Article Description 1",
             Content: "Article Content 1",
