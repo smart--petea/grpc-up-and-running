@@ -6,6 +6,7 @@ import (
     "net/http"
     "encoding/json"
     "github.com/gorilla/mux"
+    "io/ioutil"
 )
 
 func main() {
@@ -59,11 +60,31 @@ func handleRequests() {
 }
 */
 
+func createNewArticle(w http.ResponseWriter, r *http.Request) {
+    reqBody, err := ioutil.ReadAll(r.Body)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    var article Article
+    err = json.Unmarshal(reqBody, &article)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+
+    Articles = append(Articles, article)
+
+    json.NewEncoder(w).Encode(article)
+}
+
 func handleRequests() {
     myRouter := mux.NewRouter().StrictSlash(true)
     myRouter.HandleFunc("/", homePage)
     myRouter.HandleFunc("/all", returnAllArticles)
     myRouter.HandleFunc("/article/{id}", returnSingleArticle)
+    myRouter.HandleFunc("/article", createNewArticle).Methods("POST")
 
     //finally, instead of passing in nil, we want
     //to pass in our newly created router as the second argument
