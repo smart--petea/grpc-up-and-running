@@ -35,6 +35,38 @@ func (server *Server) CreateNewArticle(ctx context.Context, article *s.Article) 
     return article, nil
 }
 
+func (server *Server) DeleteArticle(ctx context.Context, id *wrappers.StringValue) (*s.Article, error) {
+    log.Printf("DeleteArticle function arg=%v", id)
+
+    article := server.GetArticleById(id.Value)
+    if article == nil {
+        return nil, status.Error(codes.NotFound, "The article is not found")
+    }
+
+    server.RemoveArticle(article)
+    return article, nil
+}
+
+func (server *Server) RemoveArticle(article *s.Article) {
+    if len(server.Articles) == 0 {
+        return
+    }
+
+    var index int
+    var art s.Article
+    for index, art = range server.Articles {
+        if art.Id == article.Id {
+            break
+        }
+    }
+
+    if index >= len(server.Articles) {
+        return
+    }
+
+    server.Articles = append(server.Articles[:index], server.Articles[index + 1:]...)
+}
+
 func (server *Server) GetArticleById(id string) *s.Article {
     for _, article := range server.Articles {
         if article.Id == id {

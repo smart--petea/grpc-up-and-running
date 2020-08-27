@@ -10,6 +10,7 @@ service ServiceA {
     rpc returnAllArticles(google.protobuf.Empty) returns (stream Article);
     rpc returnSingleArticle(google.protobuf.StringValue) returns (Article);
     rpc createNewArticle(Article) returns (Article);
+    rpc deleteArticle(google.protobuf.StringValue) returns (Article);
 }
 
 message Article {
