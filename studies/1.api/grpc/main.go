@@ -22,15 +22,37 @@ type Server struct {
     Articles []s.Article
 }
 
-func (server *Server) ReturnSingleArticle(ctx context.Context, id *wrappers.StringValue) (*s.Article, error) {
-    log.Printf("ReturnSingleArticle function arg=%v", id)
-    for _, article := range server.Articles {
-        if article.Id == id.Value {
-            return &article, nil
-        }
+func (server *Server) CreateNewArticle(ctx context.Context, article *s.Article) (*s.Article, error) {
+    log.Printf("CreateNewArticle function arg=%v", article)
+
+    existentArticle := server.GetArticleById(article.Id)
+    if existentArticle != nil {
+        return nil, status.Error(codes.AlreadyExists, "There already exists such an article")
     }
 
-    return nil, status.Error(codes.NotFound, "the article is not found")
+    server.Articles = append(server.Articles, *article)
+
+    return article, nil
+}
+
+func (server *Server) GetArticleById(id string) *s.Article {
+    for _, article := range server.Articles {
+        if article.Id == id {
+            return &article
+        }
+    }
+    return nil
+}
+
+func (server *Server) ReturnSingleArticle(ctx context.Context, id *wrappers.StringValue) (*s.Article, error) {
+    log.Printf("ReturnSingleArticle function arg=%v", id)
+
+    article := server.GetArticleById(id.Value)
+    if article == nil {
+        return nil, status.Error(codes.NotFound, "the article is not found")
+    }
+
+    return article, nil
 }
 
 func (server *Server) ReturnAllArticles(emt *empty.Empty, stream s.ServiceA_ReturnAllArticlesServer) error {
