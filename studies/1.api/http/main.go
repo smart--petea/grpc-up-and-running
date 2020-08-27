@@ -20,6 +20,7 @@ func main() {
 
 func returnSingleArticle(w http.ResponseWriter, r *http.Request) {
     /*Vars returns the route variables for the current request, if any*/
+    log.Printf("returnSingleArticle %s %s\n", r.URL.Path, r.Method)
     vars := mux.Vars(r)
     key := vars["id"]
 
@@ -60,7 +61,23 @@ func handleRequests() {
 }
 */
 
+func deleteArticle(w http.ResponseWriter, r *http.Request) {
+    log.Printf("deleteArticle %s\n", r.URL.Path)
+    vars := mux.Vars(r)
+    id := vars["id"]
+
+    for index, article := range Articles {
+        if article.Id == id {
+            Articles = append(Articles[:index], Articles[index+1:]...)
+            return;
+        }
+    }
+
+    http.NotFound(w, r)
+}
+
 func createNewArticle(w http.ResponseWriter, r *http.Request) {
+    log.Printf("createNewArticle %s\n", r.URL.Path)
     reqBody, err := ioutil.ReadAll(r.Body)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -83,8 +100,9 @@ func handleRequests() {
     myRouter := mux.NewRouter().StrictSlash(true)
     myRouter.HandleFunc("/", homePage)
     myRouter.HandleFunc("/all", returnAllArticles)
-    myRouter.HandleFunc("/article/{id}", returnSingleArticle)
+    myRouter.HandleFunc("/article/{id}", returnSingleArticle).Methods("GET")
     myRouter.HandleFunc("/article", createNewArticle).Methods("POST")
+    myRouter.HandleFunc("/article/{id}", deleteArticle).Methods("DELETE")
 
     //finally, instead of passing in nil, we want
     //to pass in our newly created router as the second argument
